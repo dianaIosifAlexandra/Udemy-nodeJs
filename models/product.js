@@ -27,7 +27,8 @@ module.exports = class Product {
         /* in situatia de mai jos: products.push(this); scris direct in save(), this se refera la obiectul creat pe baza clasei 
          si este exact obiectul pe care vreau sa il adaug */
         // products.push(this);
- 
+
+        this.id = Math.random().toString();
         getProductsFromFile((products) => {
             /* this se refera la clasa deoarece este chemat intr-un arrow function, 
                       daca era un simplu function, this facea referire la scope-ul functiei*/
@@ -42,5 +43,12 @@ module.exports = class Product {
     /*permite apelarea acestei functii direct din clasa, fara a ma folosi de un obiect instantiat */
     static fetchAll(callback) {
         getProductsFromFile(callback);
+    }
+
+    static getProductById(id, callback) {
+        getProductsFromFile(products => {
+            const product = products.find((product) => product.id === id);
+            callback(product);
+        })
     }
 }
