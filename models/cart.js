@@ -25,7 +25,7 @@ module.exports = class Cart {
             // add new product + increase quantity
             if (existingProduct) {
                 updatedProduct = { ...existingProduct };
-                updatedProduct.quantity += updatedProduct.quantity + 1;
+                updatedProduct.quantity = updatedProduct.quantity + 1;
                 cart.products = [...cart.products];
                 cart.products[existingProductIndex] = updatedProduct;
             }
@@ -36,7 +36,7 @@ module.exports = class Cart {
                 cart.products = [...cart.products, updatedProduct];
             }
 
-            cart.totalPrice += +productPrice;
+            cart.totalPrice = cart.totalPrice + productPrice;
 
             fs.writeFile(myPath, JSON.stringify(cart), err => {
                 console.log(err);
@@ -53,14 +53,14 @@ module.exports = class Cart {
             const updatedCart = { ...JSON.parse(fileContent) };
 
             const product = updatedCart.products.find(prod => prod.id === id);
-            if(!product) {
+            if (!product) {
                 return;
             }
-            
+
             const productQuantity = product.quantity;
 
-            updatedCart.products = updatedCart.products.filter(prod => prod.id === id);
-            updatedCart.totalPrice -= productPrice * productQuantity;
+            updatedCart.products = updatedCart.products.filter(prod => prod.id !== id);
+            updatedCart.totalPrice = updatedCart.totalPrice - productPrice * productQuantity;
 
             fs.writeFile(myPath, JSON.stringify(updatedCart), err => {
                 console.log(err);
@@ -72,7 +72,7 @@ module.exports = class Cart {
         fs.readFile(myPath, (err, fileContent) => {
             const cart = JSON.parse(fileContent);
 
-            if(err) {
+            if (err) {
                 callback(null);
             }
             else {
