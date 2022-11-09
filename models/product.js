@@ -16,7 +16,8 @@ const getProductsFromFile = (callback) => {
 };
 
 module.exports = class Product {
-    constructor(title, imageUrl, description, price) {
+    constructor(id, title, imageUrl, description, price) {
+        this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
         this.description = description;
@@ -28,27 +29,43 @@ module.exports = class Product {
          si este exact obiectul pe care vreau sa il adaug */
         // products.push(this);
 
-        this.id = Math.random().toString();
         getProductsFromFile((products) => {
             /* this se refera la clasa deoarece este chemat intr-un arrow function, 
                       daca era un simplu function, this facea referire la scope-ul functiei*/
-            products.push(this);
+            if (this.id) {
+                const existingProductIndex = products.findIndex(prod => prod.id === this.id);
+                const updatedProducts = [...products];
+                updatedProducts[existingProductIndex] = this;
 
-            fs.writeFile(myPath, JSON.stringify(products), (err) => {
-                console.log(err);
-            });
+                fs.writeFile(myPath, JSON.stringify(updatedProducts), (err) => {
+                    console.log(err);
+                });
+            }
+            else {
+                this.id = Math.random().toString();
+                products.push(this);
+
+                fs.writeFile(myPath, JSON.stringify(products), (err) => {
+                    console.log(err);
+                });
+            }
+
         });
+    };
+
+    update() {
+
     }
 
     /*permite apelarea acestei functii direct din clasa, fara a ma folosi de un obiect instantiat */
     static fetchAll(callback) {
         getProductsFromFile(callback);
-    }
+    };
 
     static getProductById(id, callback) {
         getProductsFromFile(products => {
             const product = products.find((product) => product.id === id);
             callback(product);
-        })
-    }
+        });
+    };
 }
