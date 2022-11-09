@@ -4,6 +4,8 @@ const path = require('path');
 const filePath = require('../util/path');
 const myPath = path.join(filePath, 'data', 'products.json');
 
+const Cart = require('./cart');
+
 const getProductsFromFile = (callback) => {
     fs.readFile(myPath, (err, fileContent) => {
         if (err) {
@@ -53,8 +55,17 @@ module.exports = class Product {
         });
     };
 
-    update() {
+    static deleteById(id) {
+        getProductsFromFile((products) => {
+            const product = products.find(prod => prod.id === id);
+            const filteredProducts = products.filter(prod => prod.id !== id);
 
+            fs.writeFile(myPath, JSON.stringify(filteredProducts), (err) => {
+                if(!err) {
+                    Cart.deleteProduct(id,product.price);
+                }
+            });
+        });
     }
 
     /*permite apelarea acestei functii direct din clasa, fara a ma folosi de un obiect instantiat */
