@@ -19,14 +19,9 @@ exports.postAddProduct = (req, res, next) => {
     description: description,
   })
     .then((result) => {
-      res.redirect('/');
+      res.redirect("/admin/products");
     })
     .catch((err) => console.log(err));
-  // product.save()
-  //     .then(()=>{
-  //         res.redirect('/');
-  //     })
-  //     .catch(err => console.log(err));
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -37,40 +32,95 @@ exports.getEditProduct = (req, res, next) => {
   }
 
   const productId = req.params.productId;
-  Product.getProductById(productId, (product) => {
-    if (!product) return res.redirect("/");
 
-    res.render("admin/edit-product", {
-      pageTitle: "Edit Product",
-      path: "/admin/edit-product",
-      editing: editMode,
-      product,
-    });
-  });
+  Product.findByPk(productId)
+    .then((product) => {
+      if (!product) return res.redirect("/");
+
+      res.render("admin/edit-product", {
+        pageTitle: "Edit Product",
+        path: "/admin/edit-product",
+        editing: editMode,
+        product,
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.updateProduct = (req, res, nect) => {
   const { productId, title, imageUrl, description, price } = req.body;
 
-  const product = new Product(productId, title, imageUrl, description, price);
-  product.save();
-  res.redirect("/admin/products");
+  /* versiunea mea
+  Product.update(
+    {
+      title: title,
+      price: price,
+      imageUrl: imageUrl,
+      description: description,
+    },
+    {
+      where: {
+        id: productId,
+      },
+    }
+  )
+    .then((result) => {
+      console.log(result);
+      res.redirect("/admin/products");
+    })
+    .catch((err) => console.log(err));
+    */
+
+  // versiunea din curs
+  Product.findByPk(productId)
+    .then((product) => {
+      product.title = title;
+      product.price = price;
+      product.imageUrl = imageUrl;
+      product.description = description;
+
+      return product.save();
+    })
+    .then((result) => {
+      res.redirect("/admin/products");
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll((products) => {
-    res.render("admin/products", {
-      prods: products,
-      pageTitle: "Admin products",
-      path: "/admin/products",
-    });
-  });
+  Product.findAll()
+    .then((products) => {
+      res.render("admin/products", {
+        prods: products,
+        pageTitle: "Admin products",
+        path: "/admin/products",
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.deleteProduct = (req, res, next) => {
   const productId = req.body.productId;
 
-  Product.deleteById(productId);
+  // varianta mea
+  //   Product.destroy({
+  //     where: {
+  //       id: productId,
+  //     },
+  //   })
+  //     .then((result) => {
+  //       console.log(result);
+  //       res.redirect("/admin/products");
+  //     })
+  //     .catch((err) => console.log(err));
 
-  res.redirect("/admin/products");
+  // din curs
+  Product.findByPk(productId)
+    .then((product) => {
+      return product.destroy();
+    })
+    .then((result) => {
+      res.redirect("/admin/products");
+    })
+    .catch((err) => console.log(err));
 };
